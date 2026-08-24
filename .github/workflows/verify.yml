@@ -53,7 +53,7 @@ jobs:
           lake-package-directory: formal/lean
       - run: python scripts/check.py
       - if: steps.profile.outputs.paper == 'true'
-        uses: xu-cheng/latex-action@e2f99d4b3685b0da93f97e1b86ad8fab81105098
+        uses: xu-cheng/latex-action@6549dc21effb2730855a1281407ecfcececc6c1b
         with:
           root_file: main.tex
           working_directory: paper
