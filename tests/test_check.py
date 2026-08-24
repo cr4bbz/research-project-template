@@ -106,16 +106,46 @@ class CheckScriptTests(unittest.TestCase):
         result = self.check("--paper")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((self.root / "paper/main.pdf").is_file())
-        self.assertTrue((self.root / "paper/renders" / f"project-name-v0.1.0-{date.today().isoformat()}.pdf").is_file())
+        render = self.root / "paper/renders" / f"project-name-v0.1.0-{date.today().isoformat()}.pdf"
+        self.assertTrue(render.is_file())
+        self.assertTrue(render.with_suffix(".pdf.json").is_file())
+
+    @unittest.skipUnless(shutil.which("latexmk"), "latexmk is not installed")
+    def test_changed_sources_cannot_overwrite_versioned_render(self):
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("formal = true", "formal = false"))
+        self.write(
+            "docs/CLAIM_LEDGER.md",
+            ledger.replace("| C-001 | formal-theorem |", "| C-001 | computational-experiment |").replace(
+                "formal/lean/TemplateFormalization/Basic.lean#modus_ponens", "analysis/generate_figure.py"
+            ),
+        )
+        self.assertEqual(self.check("--paper").returncode, 0)
+        section = self.root / "paper/sections/01_introduction.tex"
+        section.write_text(section.read_text(encoding="utf-8") + "\nChanged after render.\n", encoding="utf-8")
+        result = self.check("--paper")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("existing versioned render belongs to different sources", result.stderr)
 
     def test_release_flag_rejects_disabled_release(self):
-        result = self.check("--static", "--release")
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        profile = profile.replace("formal = true", "formal = false").replace("analysis = true", "analysis = false").replace("paper = true", "paper = false")
+        ledger = ledger.replace("| C-001 | formal-theorem |", "| C-001 | worked-example |").replace("paper/sections/03_formalisation.tex", "—").replace("paper/sections/02_method.tex", "—")
+        self.write("PROJECT_PROFILE.toml", profile)
+        self.write("docs/CLAIM_LEDGER.md", ledger)
+        result = self.check("--release")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("release checks disabled", result.stderr)
 
     def test_release_accepts_complete_citation_metadata(self):
         profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
-        self.write("PROJECT_PROFILE.toml", profile.replace("enabled = false", "enabled = true"))
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        profile = profile.replace("formal = true", "formal = false").replace("analysis = true", "analysis = false").replace("paper = true", "paper = false").replace("enabled = false", "enabled = true")
+        ledger = ledger.replace("| C-001 | formal-theorem |", "| C-001 | worked-example |").replace("paper/sections/03_formalisation.tex", "—").replace("paper/sections/02_method.tex", "—")
+        self.write("PROJECT_PROFILE.toml", profile)
+        self.write("docs/CLAIM_LEDGER.md", ledger)
         self.write(
             "CITATION.cff",
             """cff-version: 1.2.0
@@ -127,12 +157,20 @@ version: 0.1.0
 date-released: 2026-08-24
 """,
         )
-        result = self.check("--static", "--release")
+        result = self.check("--release")
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    @unittest.skipUnless(shutil.which("latexmk"), "latexmk is not installed")
     def test_release_rejects_citation_version_mismatch(self):
         profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
-        self.write("PROJECT_PROFILE.toml", profile.replace("enabled = false", "enabled = true"))
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("formal = true", "formal = false").replace("enabled = false", "enabled = true"))
+        self.write(
+            "docs/CLAIM_LEDGER.md",
+            ledger.replace("| C-001 | formal-theorem |", "| C-001 | computational-experiment |").replace(
+                "formal/lean/TemplateFormalization/Basic.lean#modus_ponens", "analysis/generate_figure.py"
+            ),
+        )
         self.write(
             "CITATION.cff",
             """cff-version: 1.2.0
@@ -143,9 +181,67 @@ version: 9.9.9
 date-released: 2026-08-24
 """,
         )
-        result = self.check("--static", "--release")
+        result = self.check("--release")
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("CITATION.cff version must match paper.version", result.stderr)
+
+    @unittest.skipUnless(shutil.which("latexmk"), "latexmk is not installed")
+    def test_release_requires_matching_render_log(self):
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("formal = true", "formal = false").replace("enabled = false", "enabled = true"))
+        self.write(
+            "docs/CLAIM_LEDGER.md",
+            ledger.replace("| C-001 | formal-theorem |", "| C-001 | computational-experiment |").replace(
+                "formal/lean/TemplateFormalization/Basic.lean#modus_ponens", "analysis/generate_figure.py"
+            ),
+        )
+        self.write(
+            "CITATION.cff",
+            """cff-version: 1.2.0
+title: \"Verification Example\"
+authors:
+  - family-names: \"Example\"
+version: 0.1.0
+date-released: 2026-08-24
+""",
+        )
+        result = self.check("--release")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("release needs matching render-log entry", result.stderr)
+
+    @unittest.skipUnless(shutil.which("latexmk"), "latexmk is not installed")
+    def test_release_accepts_matching_render_log(self):
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("formal = true", "formal = false").replace("enabled = false", "enabled = true"))
+        self.write(
+            "docs/CLAIM_LEDGER.md",
+            ledger.replace("| C-001 | formal-theorem |", "| C-001 | computational-experiment |").replace(
+                "formal/lean/TemplateFormalization/Basic.lean#modus_ponens", "analysis/generate_figure.py"
+            ),
+        )
+        self.write(
+            "CITATION.cff",
+            """cff-version: 1.2.0
+title: \"Verification Example\"
+authors:
+  - family-names: \"Example\"
+version: 0.1.0
+date-released: 2026-08-24
+""",
+        )
+        render_date = date.today().isoformat()
+        self.write(
+            "docs/RENDER_LOG.md",
+            """# Paper-render log
+
+| Render file | Paper version | Render date | Source commit / archive ID | Purpose | Notes |
+|---|---|---|---|---|---|
+| paper/renders/project-name-v0.1.0-""" + render_date + ".pdf | 0.1.0 | " + render_date + " | test-commit | release test | generated in test |\n",
+        )
+        result = self.check("--release")
+        self.assertEqual(result.returncode, 0, result.stderr)
 
 
 if __name__ == "__main__":

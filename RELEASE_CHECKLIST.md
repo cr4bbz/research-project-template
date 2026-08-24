@@ -6,6 +6,8 @@ a public release. Set `[release].enabled = true` in `PROJECT_PROFILE.toml` first
 - [ ] `python scripts/check.py` succeeds from a clean checkout.
 - [ ] `python scripts/check.py --paper` succeeds when the paper module is active.
 - [ ] `python scripts/check.py --release` succeeds.
+- [ ] The release render and its `.pdf.json` manifest have a matching row in
+  `docs/RENDER_LOG.md` with the source commit or archive identifier.
 - [ ] Every central claim has a complete ledger row with evidence type, assumptions,
   and scope; bounded computations are explicitly labelled as bounded.
 - [ ] `CITATION.cff`, `[paper].version`, `paper/PAPER_VERSION.tex`, and the release tag

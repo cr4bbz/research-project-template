@@ -29,15 +29,24 @@ Set the version **before** producing a render that will be shared. A changed PDF
 silently reuse an earlier version number. For a public release, this version, the Git tag
 (`v<version>`), and `CITATION.cff` must agree.
 
+The checker records a source fingerprint alongside each render in a generated `.pdf.json`
+manifest. Re-running unchanged sources reuses the existing render; changed sources with
+the same slug, version, and date fail rather than overwrite it. Increment the version
+before rendering again.
+
 ## Render procedure
 
 1. Update the paper version in `PROJECT_PROFILE.toml` and `paper/PAPER_VERSION.tex`.
 2. Run `python scripts/check.py --paper` from a clean checkout.
-3. Verify the new file in `paper/renders/` and record a shareable or archival render in
-   `docs/RENDER_LOG.md`.
+3. Verify the new PDF and its `.pdf.json` manifest in `paper/renders/`, then record a
+   shareable or archival render in `docs/RENDER_LOG.md`.
 4. Attach that exact PDF to the review, release, or archive. Never hand-edit a file in
    `paper/renders/`.
 
 The unversioned `paper/main.pdf` is only a LaTeX build intermediate. The versioned render
 is the handoff artefact; both remain untracked until deliberately attached to a release or
 archive.
+
+`python scripts/check.py --release` is a full preflight: it builds the active paper and
+requires today's matching render, manifest, and render-log row. `--static --release` is
+intentionally rejected so it cannot bypass publication checks.

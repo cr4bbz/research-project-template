@@ -58,3 +58,11 @@ jobs:
           root_file: main.tex
           working_directory: paper
           latexmk_use_xelatex: false
+      - if: steps.profile.outputs.paper == 'true'
+        run: python scripts/check.py --static --render-existing-paper
+      - if: steps.profile.outputs.paper == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: paper-render
+          path: paper/renders/*.pdf
+          if-no-files-found: error

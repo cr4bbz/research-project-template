@@ -26,7 +26,7 @@ The template is modular. Select only the paper, Lean, and analysis modules neede
 
 ## Verification
 
-Requires Python 3.11 or newer. Run `python scripts/check.py` for all active modules; this also executes the declared analysis contract and verifies its outputs. Run `python scripts/check.py --paper` to regenerate active analysis outputs and build the paper. Run `python scripts/check.py --static` for profile, ledger, and Python-source checks without running Lean, analysis, or LaTeX. Run `python scripts/check.py --release` only when release mode is enabled.
+Requires Python 3.11 or newer. Run `python scripts/check.py` for all active modules; this also executes the declared analysis contract and verifies its outputs. Run `python scripts/check.py --paper` to regenerate active analysis outputs and build the paper. Run `python scripts/check.py --static` for profile, ledger, and Python-source checks without running Lean, analysis, or LaTeX. Run `python scripts/check.py --release` only when release mode is enabled; it is a full preflight that builds the active paper and requires its versioned render, manifest, and render-log row.
 
 Lean is pinned in formal/lean/lean-toolchain. The paper command requires latexmk. See TEMPLATE_STATUS.md for the template's own maintenance status and compatibility promise.
 

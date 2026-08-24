@@ -12,3 +12,5 @@ their own release notes for research claims and results.
 - Separated template maintenance status from derived-project gates.
 - Added a versioned paper-render contract with dated filenames, in-PDF version display,
   citation consistency checks, and an external-handoff log.
+- Made render identities immutable with source-fingerprint manifests; release preflight
+  now requires a matching render-log row, while CI exports the versioned render artifact.

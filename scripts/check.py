@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import compileall
 from datetime import date
+import hashlib
+import json
 import re
 import shutil
 import subprocess
@@ -18,6 +20,7 @@ VISUALIZATION_PLAN = ROOT / "docs" / "VISUALIZATION_PLAN.md"
 PROFILE = ROOT / "PROJECT_PROFILE.toml"
 PAPER_VERSION = ROOT / "paper" / "PAPER_VERSION.tex"
 RENDERS = ROOT / "paper" / "renders"
+RENDER_LOG = ROOT / "docs" / "RENDER_LOG.md"
 EVIDENCE_TYPES = {"formal-theorem", "bounded-exhaustive-check", "computational-experiment", "worked-example", "interpretation"}
 STATUSES = {"planned", "checked", "established", "withdrawn"}
 SCOPE_PREFIXES = {"bounded", "unbounded"}
@@ -244,9 +247,12 @@ def check_release(profile):
     citation = ROOT / "CITATION.cff"
     if citation in required:
         content = citation.read_text(encoding="utf-8")
-        for field in ("cff-version", "title", "authors", "version", "date-released"):
+        for field in ("cff-version", "title", "version", "date-released"):
             if not re.search(r"^" + re.escape(field) + r":\s*\S", content, re.MULTILINE):
                 raise RuntimeError("CITATION.cff missing required field: " + field)
+        author_entry = re.search(r"^authors:\s*\n(?:^[ \t]+.*\n)*?^[ \t]+-\s+(?:family-names|name):\s*\S", content, re.MULTILINE)
+        if not author_entry:
+            raise RuntimeError("CITATION.cff needs at least one named author")
         date_match = re.search(r"^date-released:\s*['\"]?([0-9]{4}-[0-9]{2}-[0-9]{2})", content, re.MULTILINE)
         if not date_match:
             raise RuntimeError("CITATION.cff date-released must use YYYY-MM-DD")
@@ -258,6 +264,15 @@ def check_release(profile):
             version_match = re.search(r"^version:\s*['\"]?([^\s'\"]+)", content, re.MULTILINE)
             if not version_match or version_match.group(1) != profile["paper"]["version"]:
                 raise RuntimeError("CITATION.cff version must match paper.version")
+    if profile["modules"]["paper"] and profile["profile_version"] >= 3:
+        expected = RENDERS / render_name(profile, date.today())
+        if not expected.is_file():
+            raise RuntimeError("release needs today's versioned paper render: " + str(expected.relative_to(ROOT)))
+        manifest = render_manifest_path(expected)
+        if not manifest.is_file():
+            raise RuntimeError("release needs render manifest: " + str(manifest.relative_to(ROOT)))
+        if not render_log_contains(expected, profile, date.today()):
+            raise RuntimeError("release needs matching render-log entry: " + str(expected.relative_to(ROOT)))
     print("release metadata verified")
 
 
@@ -265,6 +280,42 @@ def render_name(profile, render_date):
     if profile["profile_version"] < 3:
         return None
     return profile["paper"]["slug"] + "-v" + profile["paper"]["version"] + "-" + render_date.isoformat() + ".pdf"
+
+
+def render_manifest_path(render):
+    return render.with_suffix(render.suffix + ".json")
+
+
+def render_source_fingerprint():
+    digest = hashlib.sha256()
+    excluded_suffixes = {".aux", ".bbl", ".blg", ".fdb_latexmk", ".fls", ".log", ".out", ".pdf"}
+    sources = []
+    for path in (ROOT / "paper").rglob("*"):
+        if path.is_file() and RENDERS not in path.parents and path.suffix not in excluded_suffixes:
+            sources.append(path)
+    bibliography = ROOT / "references" / "bibliography.bib"
+    if bibliography.is_file():
+        sources.append(bibliography)
+    for path in sorted(sources, key=lambda item: item.relative_to(ROOT).as_posix()):
+        relative = path.relative_to(ROOT).as_posix().encode("utf-8")
+        digest.update(len(relative).to_bytes(4, "big"))
+        digest.update(relative)
+        content = path.read_bytes()
+        digest.update(len(content).to_bytes(8, "big"))
+        digest.update(content)
+    return digest.hexdigest()
+
+
+def render_log_contains(render, profile, render_date):
+    if not RENDER_LOG.is_file():
+        return False
+    expected = render.relative_to(ROOT).as_posix()
+    for line in RENDER_LOG.read_text(encoding="utf-8").splitlines():
+        if line.startswith("|") and "---" not in line:
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if len(cells) == 6 and cells[0] == expected:
+                return cells[1] == profile["paper"]["version"] and cells[2] == render_date.isoformat() and cells[3] != NOT_APPLICABLE
+    return False
 
 
 def store_versioned_render(profile):
@@ -276,32 +327,67 @@ def store_versioned_render(profile):
         raise RuntimeError("LaTeX did not produce paper/main.pdf")
     RENDERS.mkdir(parents=True, exist_ok=True)
     target = RENDERS / name
+    fingerprint = render_source_fingerprint()
+    manifest = render_manifest_path(target)
+    if target.is_file():
+        if not manifest.is_file():
+            raise RuntimeError("existing versioned render has no manifest; increment paper.version before rendering")
+        try:
+            prior = json.loads(manifest.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as error:
+            raise RuntimeError("existing versioned render has invalid manifest; increment paper.version before rendering") from error
+        if prior.get("source_fingerprint") != fingerprint:
+            raise RuntimeError("existing versioned render belongs to different sources; increment paper.version before rendering")
+        print("versioned paper render already matches sources:", target.relative_to(ROOT))
+        return target
     shutil.copy2(source, target)
+    manifest.write_text(
+        json.dumps(
+            {
+                "render": target.name,
+                "paper_version": profile["paper"]["version"],
+                "render_date": date.today().isoformat(),
+                "source_fingerprint": fingerprint,
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     print("versioned paper render:", target.relative_to(ROOT))
+    return target
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--paper", action="store_true")
     parser.add_argument("--release", action="store_true")
+    parser.add_argument("--render-existing-paper", action="store_true")
     parser.add_argument("--static", action="store_true")
     args = parser.parse_args()
+    if args.paper and args.render_existing_paper:
+        raise RuntimeError("use either --paper or --render-existing-paper")
+    if args.release and args.static:
+        raise RuntimeError("--release requires a full check; do not combine it with --static")
     profile = read_profile()
     claims = check_ledger(profile)
     check_visualization_plan(profile, claims)
     check_paper_metadata(profile)
-    if args.release:
-        check_release(profile)
     check_analysis(profile, execute=not args.static)
     if profile["modules"]["formal"] and not args.static:
         run(["lake", "build"], ROOT / "formal" / "lean")
-    if args.paper and not profile["modules"]["paper"]:
+    render_requested = args.paper or args.render_existing_paper
+    if render_requested and not profile["modules"]["paper"]:
         raise RuntimeError("paper requested but disabled by profile")
-    if args.paper and not args.static:
+    if args.render_existing_paper:
+        store_versioned_render(profile)
+    elif (args.paper or (args.release and profile["modules"]["paper"])) and not args.static:
         if not shutil.which("latexmk"):
-            raise RuntimeError("--paper requires latexmk")
+            raise RuntimeError("paper render requires latexmk")
         run(["latexmk", "-pdf", "-interaction=nonstopmode", "main.tex"], ROOT / "paper")
         store_versioned_render(profile)
+    if args.release:
+        check_release(profile)
 
 
 if __name__ == "__main__":

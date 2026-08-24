@@ -43,5 +43,6 @@ A green infrastructure-only check does not require manufactured paper prose.
 - Treat `docs/PAPER_RENDER_CONTRACT.md` as the publication handoff contract. Before a
   shareable render, set a deliberate paper version in both canonical locations and create
   the dated filename through `python scripts/check.py --paper`; log external handoffs in
-  `docs/RENDER_LOG.md`.
+  `docs/RENDER_LOG.md`. Never overwrite a dated render with changed sources; increment
+  the version instead.
 - Before a public research release, set release.enabled to true in PROJECT_PROFILE.toml, complete RELEASE_CHECKLIST.md, and require python scripts/check.py --release to pass.
