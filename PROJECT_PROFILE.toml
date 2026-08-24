@@ -1,0 +1,17 @@
+# Select only the modules this project actually uses. The verification script and CI
+# read this file; deleting a directory without updating this profile is an error.
+profile_version = 1
+
+[modules]
+formal = true
+analysis = true
+paper = true
+
+[release]
+# Templates are not publication artefacts. Set true only when this derived project is
+# ready for a public, citable release; `python scripts/check.py --release` then applies
+# the additional metadata checks.
+enabled = false
+require_citation = true
+require_content_license = true
+

@@ -1,7 +1,8 @@
 # Paper module
 
-`main.tex` is the sole LaTeX entry point. Put prose in `sections/`, generated TeX inputs
-or graphics in `figures/generated/`, and bibliographic data in `../references/`.
+main.tex is the LaTeX entry point. Put prose in sections, generated inputs in figures/generated, and bibliography data in ../references.
 
-Build locally with `latexmk -pdf -interaction=nonstopmode main.tex` from this directory,
-or run `python ../scripts/check.py --paper` from the repository root.
+Build with latexmk -pdf -interaction=nonstopmode main.tex here, or python ../scripts/check.py --paper at repository root.
+
+For a public release, attach the generated PDF to the tagged release. Tracked TeX remains the authoritative artefact.
+

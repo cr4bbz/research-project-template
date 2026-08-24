@@ -1,72 +1,33 @@
 # Research Project Template
 
-Template for projects in which an academic argument, formalisation, computation, and
-publication-quality artefacts must remain mutually checkable.
+Template for projects in which an academic argument, formalisation, computation, and publication artefacts must remain mutually checkable.
 
-It is intentionally **modular**: a project may use only the paper, only Lean, or the
-entire evidence pipeline. Delete unused modules at the first project commit; do not
-leave fictional plans or placeholder claims behind.
+The template is modular. Select only the paper, Lean, and analysis modules needed by a project in PROJECT_PROFILE.toml before deleting unused directories.
 
-## The contract
+## Contract
 
-1. `VISION.md` records the stable purpose and exclusions.
-2. `GATE_PLAN.md` records falsifiable, time-local development commitments.
-3. Every central claim belongs in `docs/CLAIM_LEDGER.md`, with its evidence and paper
-   location.
-4. Lean theorems, computational results, and paper prose are separate artefacts linked
-   by that ledger; none silently substitutes for another.
-5. A green check is a release event: update the claim ledger and the paper when the
-   result changes the research record.
+1. VISION.md records stable purpose and exclusions.
+2. GATE_PLAN.md records falsifiable development commitments.
+3. Every central claim is in docs/CLAIM_LEDGER.md with evidence, assumptions, scope, and paper location.
+4. Lean theorems, computational outputs, and paper prose remain distinct linked artefacts.
+5. A green research-facing check updates the ledger and, where relevant, the paper.
 
-## Repository map
+## Start a derived project
 
-```text
-.
-├── paper/                 # LaTeX source and generated publication artefacts
-├── formal/lean/           # independent Lean/Lake project
-├── analysis/              # deterministic computations and figure generators
-├── docs/                  # research contracts, decisions, reproducibility record
-├── references/            # curated bibliography and explicitly non-authoritative notes
-├── scripts/               # cross-platform verification entry points
-└── .github/               # CI and contribution templates
-```
-
-`paper/figures/generated/` contains generated inputs only. Source data, scripts, and
-the command that produced an illustration are versioned; PDFs and build by-products are
-not.
-
-## First 30 minutes
-
-1. Replace `PROJECT_NAME` and complete `VISION.md`.
-2. Record the first immutable baseline and the first gate.
-3. Keep or delete `formal/lean/`, `analysis/`, and `paper/` deliberately.
-4. Rename the Lean package and module (`TemplateFormalization`) if you retain it.
-5. Replace the sample claim `C-001`; do not carry it into the actual project.
+1. Replace PROJECT_NAME and complete VISION.md.
+2. Select active modules in PROJECT_PROFILE.toml.
+3. Record the first baseline and gate.
+4. Rename TemplateFormalization if Lean is active.
+5. Replace sample claim C-001.
+6. Before public release, create CITATION.cff from CITATION.cff.example and complete RELEASE_CHECKLIST.md.
 
 ## Verification
 
-The portable command is:
+Run python scripts/check.py for all active modules. Run python scripts/check.py --paper to build the paper. Run python scripts/check.py --static for profile, ledger, and Python-source checks without Lean or LaTeX. Run python scripts/check.py --release only when release mode is enabled.
 
-```text
-python scripts/check.py
-```
+Lean is pinned in formal/lean/lean-toolchain. The paper command requires latexmk.
 
-It checks claim links and runs `lake build` in `formal/lean`. To build the paper too:
+## Deliberate exclusions
 
-```text
-python scripts/check.py --paper
-```
+This template does not imply a web app, dataset, AI integration, package manager, or a claim that formal verification completes a paper. It does not treat working notes or generated figures as primary evidence.
 
-The latter needs `latexmk`. Lean is pinned in `formal/lean/lean-toolchain`; install
-the pinned toolchain with `elan` and run `lake exe cache get` when a project later adds
-Mathlib.
-
-## What this template deliberately does not do
-
-- It does not equate a successful Lean build with a completed paper.
-- It does not add a web app, datasets, AI integrations, or package managers by default.
-- It does not treat working notes as sources or generated figures as primary evidence.
-- It does not force a single research methodology on projects that only need one module.
-
-See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the evidence pipeline and
-[`AGENTS.md`](AGENTS.md) for the standing maintenance contract.

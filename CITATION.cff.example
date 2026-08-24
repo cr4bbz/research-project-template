@@ -1,3 +1,4 @@
+# Copy to CITATION.cff and replace every ALL_CAPS value before a public release.
 cff-version: 1.2.0
 message: "If you use this project, please cite the released version."
 title: "PROJECT_NAME"
@@ -5,5 +6,7 @@ type: software
 authors:
   - family-names: "AUTHOR_SURNAME"
     given-names: "AUTHOR_GIVEN_NAME"
-version: 0.0.0
-date-released: 2026-08-24
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+version: 0.1.0
+date-released: YYYY-MM-DD
+

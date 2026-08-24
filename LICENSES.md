@@ -1,10 +1,8 @@
-# Licence intent
+# Licence map
 
-Choose licences before the first public release.
+LICENSE applies MIT to software, scripts, and Lean sources.
+LICENSE-CONTENT applies CC BY 4.0 to original paper prose, documentation, diagrams, and non-code figures.
+Third-party data, quotations, fonts, and images retain their own licences and attribution requirements.
 
-- Software and formalisation code: normally MIT (or another OSI-approved licence).
-- Paper prose, diagrams, and original documentation: normally CC BY 4.0.
-- Third-party data, quotations, fonts, and images: retain their own licence conditions.
+Derived projects must verify that this split fits their own material before release.
 
-Replace this file with the selected full licence texts or clear repository-level licence
-files before publishing.

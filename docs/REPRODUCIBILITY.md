@@ -2,20 +2,16 @@
 
 ## Evidence pipeline
 
-```text
-sources and assumptions → formal definitions / data → Lean or analysis check → claim ledger → paper
-```
+sources and assumptions -> formal definitions or data -> Lean or analysis check -> claim ledger -> paper
 
-Each arrow must be inspectable in the repository. The paper may interpret a result, but
-it must not claim more than the recorded evidence supports.
+Each arrow must be inspectable. The paper may interpret a result, but cannot claim more than the recorded evidence supports.
 
-## Required clean-checkout commands
+PROJECT_PROFILE.toml declares which arrows exist. A missing module is a deliberate scope choice, not a failed build. Record toolchain, inputs, parameters, seeds, and output hashes for every published computational result.
 
-```text
+## Clean-checkout commands
+
 python scripts/check.py
 python scripts/check.py --paper
-```
 
-Record any project-specific prerequisites, platform limits, random seeds, dataset
-versions, and expected output hashes here. Add a short result table for every published
-experiment.
+Record project-specific prerequisites, platform limits, data versions, and expected hashes here.
+
