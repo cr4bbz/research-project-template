@@ -11,7 +11,7 @@ The template is modular. Select only the paper, Lean, and analysis modules neede
 3. Every central claim is in docs/CLAIM_LEDGER.md with evidence, assumptions, scope, and paper location.
 4. docs/VISUALIZATION_PLAN.md records whether each claim needs a figure, table, diagram, or deliberately none.
 5. Lean theorems, computational outputs, and paper prose remain distinct linked artefacts.
-5. A green research-facing check updates the ledger and, where relevant, the paper.
+6. A green research-facing check updates the ledger and, where relevant, the paper.
 
 ## Start a derived project
 
