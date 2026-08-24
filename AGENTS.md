@@ -32,5 +32,12 @@ A green infrastructure-only check does not require manufactured paper prose.
 - Generate figures from tracked scripts and tracked inputs.
 - Keep the default verification command cross-platform: python scripts/check.py.
 - Never commit caches, local environments, TeX intermediates, or secrets.
+- When the analysis module is active, declare its tracked Python entry point and every
+  expected generated output in `PROJECT_PROFILE.toml`; the normal checker executes this
+  contract. A disabled paper module uses `—` rather than a dormant paper link in the
+  claim ledger.
+- When the paper module is active, give every ledger claim one decision in
+  `docs/VISUALIZATION_PLAN.md`: figure, table, diagram, or a reasoned `no-figure`.
+  Add a visual only when it improves inspection of the claim rather than decorating it;
+  generated outputs must remain linked to their source, claim, and paper location.
 - Before a public research release, set release.enabled to true in PROJECT_PROFILE.toml, complete RELEASE_CHECKLIST.md, and require python scripts/check.py --release to pass.
-

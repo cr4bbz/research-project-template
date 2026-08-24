@@ -2,11 +2,11 @@
 
 ## Evidence pipeline
 
-sources and assumptions -> formal definitions or data -> Lean or analysis check -> claim ledger -> paper
+sources and assumptions -> formal definitions or data -> Lean or analysis check -> claim ledger -> visualization decision -> paper
 
-Each arrow must be inspectable. The paper may interpret a result, but cannot claim more than the recorded evidence supports.
+Each arrow must be inspectable. The paper may interpret a result, but cannot claim more than the recorded evidence supports. `docs/VISUALIZATION_PLAN.md` records whether a result needs a figure, table, diagram, or deliberately none.
 
-PROJECT_PROFILE.toml declares which arrows exist. A missing module is a deliberate scope choice, not a failed build. Record toolchain, inputs, parameters, seeds, and output hashes for every published computational result.
+PROJECT_PROFILE.toml declares which arrows exist. A missing module is a deliberate scope choice, not a failed build. For an active analysis module, it also declares a tracked Python entry point and its expected outputs; the normal checker executes it. Record toolchain, inputs, parameters, seeds, and output hashes for every published computational result.
 
 ## Clean-checkout commands
 
@@ -14,4 +14,3 @@ python scripts/check.py
 python scripts/check.py --paper
 
 Record project-specific prerequisites, platform limits, data versions, and expected hashes here.
-

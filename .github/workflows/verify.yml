@@ -12,7 +12,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  static:
+    name: Static contract (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.11'
+      - run: python scripts/check.py --static
+      - run: python -m unittest discover -s tests -v
+
   verify:
+    needs: static
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -28,7 +44,6 @@ jobs:
           for name, active in modules.items():
               print(f"{name}={str(active).lower()}")
           PY
-      - run: python scripts/check.py --static
       - if: steps.profile.outputs.formal == 'true'
         uses: leanprover/lean-action@50fcf42d2e460296f1a34b402e990d1b24f8b596
         with:
@@ -36,12 +51,10 @@ jobs:
           test: false
           use-github-cache: false
           lake-package-directory: formal/lean
-      - if: steps.profile.outputs.formal == 'true'
-        run: python scripts/check.py
+      - run: python scripts/check.py
       - if: steps.profile.outputs.paper == 'true'
         uses: xu-cheng/latex-action@e2f99d4b3685b0da93f97e1b86ad8fab81105098
         with:
           root_file: main.tex
           working_directory: paper
           latexmk_use_xelatex: false
-

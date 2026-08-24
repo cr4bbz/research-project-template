@@ -1,11 +1,18 @@
 # Select only the modules this project actually uses. The verification script and CI
 # read this file; deleting a directory without updating this profile is an error.
-profile_version = 1
+profile_version = 2
 
 [modules]
 formal = true
 analysis = true
 paper = true
+
+# The analysis contract is deliberately narrow: the checker invokes this tracked
+# Python source with the interpreter that runs `scripts/check.py`, then requires
+# every declared output. Change these paths together when deriving a project.
+[analysis]
+command = "analysis/generate_figure.py"
+outputs = ["paper/figures/generated/example-data.tex"]
 
 [release]
 # Templates are not publication artefacts. Set true only when this derived project is
@@ -14,4 +21,3 @@ paper = true
 enabled = false
 require_citation = true
 require_content_license = true
-
