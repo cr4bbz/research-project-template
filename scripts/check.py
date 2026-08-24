@@ -21,7 +21,7 @@ PROFILE = ROOT / "PROJECT_PROFILE.toml"
 PAPER_VERSION = ROOT / "paper" / "PAPER_VERSION.tex"
 RENDERS = ROOT / "paper" / "renders"
 RENDER_LOG = ROOT / "docs" / "RENDER_LOG.md"
-EVIDENCE_TYPES = {"formal-theorem", "bounded-exhaustive-check", "computational-experiment", "worked-example", "interpretation"}
+EVIDENCE_TYPES = {"formal-theorem", "mathematical-proof", "bounded-exhaustive-check", "computational-experiment", "worked-example", "interpretation"}
 STATUSES = {"planned", "checked", "established", "withdrawn"}
 SCOPE_PREFIXES = {"bounded", "unbounded"}
 NOT_APPLICABLE = "—"
@@ -32,7 +32,14 @@ def run(command, cwd):
     try:
         subprocess.run(command, cwd=cwd, check=True)
     except FileNotFoundError as error:
-        raise RuntimeError("required command not found on PATH: " + command[0]) from error
+        hints = {
+            "lake": "Reopen the repository in its Codespace/dev container or install elan.",
+            "latexmk": "Reopen the repository in its Codespace/dev container or install latexmk.",
+        }
+        message = "required command not found on PATH: " + command[0]
+        if command[0] in hints:
+            message += ". " + hints[command[0]]
+        raise RuntimeError(message) from error
 
 
 def read_profile():

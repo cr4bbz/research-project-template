@@ -1,0 +1,26 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Verify research project",
+      "type": "shell",
+      "command": "python scripts/check.py",
+      "options": {"cwd": "${workspaceFolder}"},
+      "problemMatcher": []
+    },
+    {
+      "label": "Render paper",
+      "type": "shell",
+      "command": "python scripts/check.py --paper",
+      "options": {"cwd": "${workspaceFolder}"},
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Lean kernel",
+      "type": "shell",
+      "command": "lake build",
+      "options": {"cwd": "${workspaceFolder}/formal/lean"},
+      "problemMatcher": []
+    }
+  ]
+}

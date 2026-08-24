@@ -2,7 +2,7 @@
 
 This ledger prevents prose, Lean theorems, and script outputs from drifting into different claims. Status is planned, checked, established, or withdrawn.
 
-Evidence type is formal-theorem, bounded-exhaustive-check, computational-experiment, worked-example, or interpretation. Scope starts with `bounded:` or `unbounded:` and states exactly what follows; finite searches must use `bounded:`. When the paper module is disabled, use `—` as the paper location rather than a dormant link.
+Evidence type is formal-theorem, mathematical-proof, bounded-exhaustive-check, computational-experiment, worked-example, or interpretation. Scope starts with `bounded:` or `unbounded:` and states exactly what follows; finite searches must use `bounded:`. When the paper module is disabled, use `—` as the paper location rather than a dormant link.
 
 | ID | Evidence type | Research claim | Assumptions | Scope | Evidence | Paper location | Status |
 |---|---|---|---|---|---|---|---|

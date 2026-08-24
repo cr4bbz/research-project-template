@@ -10,8 +10,9 @@ The template is modular. Select only the paper, Lean, and analysis modules neede
 2. GATE_PLAN.md records falsifiable development commitments.
 3. Every central claim is in docs/CLAIM_LEDGER.md with evidence, assumptions, scope, and paper location.
 4. docs/VISUALIZATION_PLAN.md records whether each claim needs a figure, table, diagram, or deliberately none.
-5. Lean theorems, computational outputs, and paper prose remain distinct linked artefacts.
-6. A green research-facing check updates the ledger and, where relevant, the paper.
+5. docs/PAPER_QUALITY_CHECKLIST.md makes the final visual and editorial review explicit.
+6. Lean theorems, mathematical proofs, computational outputs, and paper prose remain distinct linked artefacts.
+7. A green research-facing check updates the ledger and, where relevant, the paper.
 
 ## Start a derived project
 
@@ -29,6 +30,13 @@ The template is modular. Select only the paper, Lean, and analysis modules neede
 Requires Python 3.11 or newer. Run `python scripts/check.py` for all active modules; this also executes the declared analysis contract and verifies its outputs. Run `python scripts/check.py --paper` to regenerate active analysis outputs and build the paper. Run `python scripts/check.py --static` for profile, ledger, and Python-source checks without running Lean, analysis, or LaTeX. Run `python scripts/check.py --release` only when release mode is enabled; it is a full preflight that builds the active paper and requires its versioned render, manifest, and render-log row.
 
 Lean is pinned in formal/lean/lean-toolchain. The paper command requires latexmk. See TEMPLATE_STATUS.md for the template's own maintenance status and compatibility promise.
+
+## Codespaces
+
+A GitHub Codespace installs the pinned Lean toolchain, latexmk, and the Lean editor
+extension automatically. After reopening an existing Codespace following a pull, run
+`bash .devcontainer/post-create.sh`. The VS Code task menu provides **Verify research
+project**, **Render paper**, and **Build Lean kernel**, all from the correct directory.
 
 ## Deliberate exclusions
 

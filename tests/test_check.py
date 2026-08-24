@@ -60,6 +60,17 @@ class CheckScriptTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("formal theorem claim requires active formal module", result.stderr)
 
+    def test_mathematical_proof_claim_does_not_require_lean(self):
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("formal = true", "formal = false"))
+        self.write(
+            "docs/CLAIM_LEDGER.md",
+            ledger.replace("| C-001 | formal-theorem |", "| C-001 | mathematical-proof |"),
+        )
+        result = self.check("--static")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_paper_version_mismatch_fails(self):
         version_source = (self.root / "paper/PAPER_VERSION.tex").read_text(encoding="utf-8")
         self.write("paper/PAPER_VERSION.tex", version_source.replace("0.1.0", "0.1.1"))

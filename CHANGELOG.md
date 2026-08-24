@@ -14,3 +14,6 @@ their own release notes for research claims and results.
   citation consistency checks, and an external-handoff log.
 - Made render identities immutable with source-fingerprint manifests; release preflight
   now requires a matching render-log row, while CI exports the versioned render artifact.
+- Added mathematical-proof as an explicit evidence type, PDF metadata placeholders,
+  and a paper-quality checklist with visual-render review requirements.
+- Added a Codespaces/dev-container bootstrap and root-pinned VS Code verification tasks.

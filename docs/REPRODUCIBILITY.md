@@ -16,3 +16,7 @@ python scripts/check.py --paper
 `--paper` creates a dated, versioned PDF according to `docs/PAPER_RENDER_CONTRACT.md`.
 Record project-specific prerequisites, platform limits, data versions, expected hashes,
 and externally shared renders in `docs/RENDER_LOG.md`.
+
+Before sharing a render outside the working team, complete the applicable checks in
+`docs/PAPER_QUALITY_CHECKLIST.md`; this includes a visual PNG review, not only a
+successful LaTeX exit code.
