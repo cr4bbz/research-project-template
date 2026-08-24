@@ -10,3 +10,5 @@ their own release notes for research claims and results.
   example.
 - Added structured scope markers, stronger citation metadata checks, and checker tests.
 - Separated template maintenance status from derived-project gates.
+- Added a versioned paper-render contract with dated filenames, in-PDF version display,
+  citation consistency checks, and an external-handoff log.

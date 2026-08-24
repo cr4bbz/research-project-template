@@ -8,11 +8,11 @@ a public release. Set `[release].enabled = true` in `PROJECT_PROFILE.toml` first
 - [ ] `python scripts/check.py --release` succeeds.
 - [ ] Every central claim has a complete ledger row with evidence type, assumptions,
   and scope; bounded computations are explicitly labelled as bounded.
-- [ ] `CITATION.cff` has replaced the example with real authors, version, and a valid
-  release date; its version matches the release tag.
+- [ ] `CITATION.cff`, `[paper].version`, `paper/PAPER_VERSION.tex`, and the release tag
+  agree; `CITATION.cff` has real authors and a valid release date.
 - [ ] Licences cover code, formalisation, prose, graphics, data, and third-party assets.
 - [ ] The release notes state the research contribution, toolchain versions, known
   limitations, and any archived paper/result artefacts.
-- [ ] Tag the exact commit (`vMAJOR.MINOR.PATCH`); attach the generated paper PDF when
-  the paper module is active, plus result artefacts, to the GitHub release or a suitable
-  long-term archive.
+- [ ] Tag the exact commit (`vMAJOR.MINOR.PATCH`); attach the exact dated and versioned
+  PDF from `paper/renders/` when the paper module is active, plus result artefacts, to the
+  GitHub release or a suitable long-term archive.

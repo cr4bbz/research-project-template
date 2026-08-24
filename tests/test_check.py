@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 
@@ -59,6 +60,13 @@ class CheckScriptTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("formal theorem claim requires active formal module", result.stderr)
 
+    def test_paper_version_mismatch_fails(self):
+        version_source = (self.root / "paper/PAPER_VERSION.tex").read_text(encoding="utf-8")
+        self.write("paper/PAPER_VERSION.tex", version_source.replace("0.1.0", "0.1.1"))
+        result = self.check("--static")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("paper version differs", result.stderr)
+
     def test_bounded_claim_requires_structured_bounded_scope(self):
         ledger = (self.root / "docs/CLAIM_LEDGER.md").read_text(encoding="utf-8")
         ledger = ledger.replace("| C-001 | formal-theorem |", "| C-001 | bounded-exhaustive-check |")
@@ -98,6 +106,7 @@ class CheckScriptTests(unittest.TestCase):
         result = self.check("--paper")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue((self.root / "paper/main.pdf").is_file())
+        self.assertTrue((self.root / "paper/renders" / f"project-name-v0.1.0-{date.today().isoformat()}.pdf").is_file())
 
     def test_release_flag_rejects_disabled_release(self):
         result = self.check("--static", "--release")
@@ -114,12 +123,29 @@ title: \"Verification Example\"
 authors:
   - family-names: \"Example\"
     given-names: \"Ada\"
-version: 1.2.3
+version: 0.1.0
 date-released: 2026-08-24
 """,
         )
         result = self.check("--static", "--release")
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_release_rejects_citation_version_mismatch(self):
+        profile = (self.root / "PROJECT_PROFILE.toml").read_text(encoding="utf-8")
+        self.write("PROJECT_PROFILE.toml", profile.replace("enabled = false", "enabled = true"))
+        self.write(
+            "CITATION.cff",
+            """cff-version: 1.2.0
+title: \"Verification Example\"
+authors:
+  - family-names: \"Example\"
+version: 9.9.9
+date-released: 2026-08-24
+""",
+        )
+        result = self.check("--static", "--release")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("CITATION.cff version must match paper.version", result.stderr)
 
 
 if __name__ == "__main__":

@@ -21,7 +21,8 @@ The template is modular. Select only the paper, Lean, and analysis modules neede
 4. Rename TemplateFormalization if Lean is active.
 5. Replace sample claim C-001.
 6. Replace the example analysis contract if analysis is active; every generated output must be declared in PROJECT_PROFILE.toml.
-7. Before public release, create CITATION.cff from CITATION.cff.example and complete RELEASE_CHECKLIST.md.
+7. Set a deliberate paper slug and version before the first shareable paper render.
+8. Before public release, create CITATION.cff from CITATION.cff.example and complete RELEASE_CHECKLIST.md.
 
 ## Verification
 

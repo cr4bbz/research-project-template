@@ -16,6 +16,7 @@ paper/*.fls
 paper/*.log
 paper/*.out
 paper/*.pdf
+paper/renders/
 paper/figures/generated/*
 !paper/figures/generated/.gitkeep
 

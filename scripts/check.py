@@ -16,6 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "docs" / "CLAIM_LEDGER.md"
 VISUALIZATION_PLAN = ROOT / "docs" / "VISUALIZATION_PLAN.md"
 PROFILE = ROOT / "PROJECT_PROFILE.toml"
+PAPER_VERSION = ROOT / "paper" / "PAPER_VERSION.tex"
+RENDERS = ROOT / "paper" / "renders"
 EVIDENCE_TYPES = {"formal-theorem", "bounded-exhaustive-check", "computational-experiment", "worked-example", "interpretation"}
 STATUSES = {"planned", "checked", "established", "withdrawn"}
 SCOPE_PREFIXES = {"bounded", "unbounded"}
@@ -34,7 +36,7 @@ def read_profile():
     if not PROFILE.is_file():
         raise RuntimeError("missing PROJECT_PROFILE.toml")
     profile = tomllib.loads(PROFILE.read_text(encoding="utf-8"))
-    if profile.get("profile_version") not in {1, 2}:
+    if profile.get("profile_version") not in {1, 2, 3}:
         raise RuntimeError("unsupported PROJECT_PROFILE.toml version")
     modules = profile.get("modules")
     if not isinstance(modules, dict) or any(not isinstance(modules.get(name), bool) for name in ("formal", "analysis", "paper")):
@@ -45,6 +47,14 @@ def read_profile():
             raise RuntimeError("active analysis module needs analysis.command")
         if not isinstance(analysis.get("outputs"), list) or not analysis["outputs"] or not all(isinstance(path, str) for path in analysis["outputs"]):
             raise RuntimeError("active analysis module needs non-empty analysis.outputs")
+    if profile["modules"]["paper"] and profile["profile_version"] >= 3:
+        paper = profile.get("paper")
+        if not isinstance(paper, dict):
+            raise RuntimeError("active paper module needs [paper] metadata")
+        if not isinstance(paper.get("slug"), str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", paper["slug"]):
+            raise RuntimeError("paper.slug must use lowercase kebab-case")
+        if not isinstance(paper.get("version"), str) or not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", paper["version"]):
+            raise RuntimeError("paper.version must use MAJOR.MINOR.PATCH")
     return profile
 
 
@@ -183,6 +193,20 @@ def check_visualization_plan(profile, claims):
     print("visualization plan:", len(planned), "decision(s) verified")
 
 
+def check_paper_metadata(profile):
+    if not profile["modules"]["paper"] or profile["profile_version"] < 3:
+        return
+    if not PAPER_VERSION.is_file():
+        raise RuntimeError("active paper module needs paper/PAPER_VERSION.tex")
+    source = PAPER_VERSION.read_text(encoding="utf-8")
+    match = re.search(r"\\newcommand\{\\paperversion\}\{([^}]+)\}", source)
+    if not match:
+        raise RuntimeError("paper/PAPER_VERSION.tex must define \\paperversion")
+    if match.group(1) != profile["paper"]["version"]:
+        raise RuntimeError("paper version differs between PROJECT_PROFILE.toml and PAPER_VERSION.tex")
+    print("paper metadata:", profile["paper"]["slug"], "v" + profile["paper"]["version"])
+
+
 def check_analysis(profile, execute):
     if not profile["modules"]["analysis"]:
         return
@@ -230,7 +254,30 @@ def check_release(profile):
             date.fromisoformat(date_match.group(1))
         except ValueError as error:
             raise RuntimeError("CITATION.cff date-released is not a real date") from error
+        if profile["modules"]["paper"] and profile["profile_version"] >= 3:
+            version_match = re.search(r"^version:\s*['\"]?([^\s'\"]+)", content, re.MULTILINE)
+            if not version_match or version_match.group(1) != profile["paper"]["version"]:
+                raise RuntimeError("CITATION.cff version must match paper.version")
     print("release metadata verified")
+
+
+def render_name(profile, render_date):
+    if profile["profile_version"] < 3:
+        return None
+    return profile["paper"]["slug"] + "-v" + profile["paper"]["version"] + "-" + render_date.isoformat() + ".pdf"
+
+
+def store_versioned_render(profile):
+    name = render_name(profile, date.today())
+    if name is None:
+        return
+    source = ROOT / "paper" / "main.pdf"
+    if not source.is_file() or source.stat().st_size == 0:
+        raise RuntimeError("LaTeX did not produce paper/main.pdf")
+    RENDERS.mkdir(parents=True, exist_ok=True)
+    target = RENDERS / name
+    shutil.copy2(source, target)
+    print("versioned paper render:", target.relative_to(ROOT))
 
 
 def main():
@@ -242,6 +289,7 @@ def main():
     profile = read_profile()
     claims = check_ledger(profile)
     check_visualization_plan(profile, claims)
+    check_paper_metadata(profile)
     if args.release:
         check_release(profile)
     check_analysis(profile, execute=not args.static)
@@ -253,6 +301,7 @@ def main():
         if not shutil.which("latexmk"):
             raise RuntimeError("--paper requires latexmk")
         run(["latexmk", "-pdf", "-interaction=nonstopmode", "main.tex"], ROOT / "paper")
+        store_versioned_render(profile)
 
 
 if __name__ == "__main__":

@@ -13,4 +13,6 @@ PROJECT_PROFILE.toml declares which arrows exist. A missing module is a delibera
 python scripts/check.py
 python scripts/check.py --paper
 
-Record project-specific prerequisites, platform limits, data versions, and expected hashes here.
+`--paper` creates a dated, versioned PDF according to `docs/PAPER_RENDER_CONTRACT.md`.
+Record project-specific prerequisites, platform limits, data versions, expected hashes,
+and externally shared renders in `docs/RENDER_LOG.md`.

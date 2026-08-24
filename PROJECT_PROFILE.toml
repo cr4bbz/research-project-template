@@ -1,6 +1,6 @@
 # Select only the modules this project actually uses. The verification script and CI
 # read this file; deleting a directory without updating this profile is an error.
-profile_version = 2
+profile_version = 3
 
 [modules]
 formal = true
@@ -13,6 +13,12 @@ paper = true
 [analysis]
 command = "analysis/generate_figure.py"
 outputs = ["paper/figures/generated/example-data.tex"]
+
+# These fields are the canonical identity of every generated paper render.
+# The checker verifies that paper/PAPER_VERSION.tex displays the same version.
+[paper]
+slug = "project-name"
+version = "0.1.0"
 
 [release]
 # Templates are not publication artefacts. Set true only when this derived project is

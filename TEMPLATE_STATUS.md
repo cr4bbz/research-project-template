@@ -12,6 +12,9 @@ to the modules a research project actually uses.
 - Lean projects use the version pinned in `formal/lean/lean-toolchain`.
 - An active analysis module declares one tracked Python entry point and one or more
   deterministic outputs in `PROJECT_PROFILE.toml`.
+- An active paper module declares a kebab-case render slug and `MAJOR.MINOR.PATCH`
+  version; `python scripts/check.py --paper` creates the dated handoff PDF defined in
+  `docs/PAPER_RENDER_CONTRACT.md`.
 - A derived project may disable formal, analysis, or paper. Its claim ledger must use
   `—` for the paper location when the paper module is disabled; formal-theorem claims
   require the formal module.
