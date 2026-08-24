@@ -1,0 +1,24 @@
+# Lean
+formal/lean/.lake/
+formal/lean/build/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# LaTeX build artefacts
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/figures/generated/*
+!paper/figures/generated/.gitkeep
+
+# Editor and OS
+.DS_Store
+.vscode/

@@ -1,0 +1,5 @@
+name = "template-formalization"
+defaultTargets = ["TemplateFormalization"]
+
+[[lean_lib]]
+name = "TemplateFormalization"

@@ -1,0 +1,27 @@
+name: Verify
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  formal-and-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: leanprover/lean4-action@v1
+        with:
+          lake-package-directory: formal/lean
+      - run: python scripts/check.py
+  paper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: paper
+          latexmk_use_xelatex: false
